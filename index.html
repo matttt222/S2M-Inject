@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <title>S2M-Inject: Prompt-Guided Zero-Shot Voice Cloning for Music Generation</title>
+  <!-- Include Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafc;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Roboto', sans-serif;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    p {
+      margin: 0 0 1.5rem;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(90deg, #2c3e50, #34495e);
+      color: #fff;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1rem;
+      font-weight: 300;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #2c3e50;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      border-bottom: 2px solid #e74c3c;
+      display: inline-block;
+      padding-bottom: 0.3rem;
+    }
+
+    .section p {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    /* Images and Figures */
+    figure {
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    figure figcaption {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    td {
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    tbody tr:hover {
+      background-color: #f2f2f2;
+    }
+
+    /* Audio Player */
+    audio {
+      width: 100%;
+      max-width: 250px;
+      margin-top: 0.5rem;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    /* Footer */
+    footer {
+      background: #2c3e50;
+      color: #fff;
+      text-align: center;
+      padding: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    /* Utility Classes */
+    .text-center {
+      text-align: center;
+    }
+
+    .highlight {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      header p {
+        font-size: 0.9rem;
+      }
+
+      .section h2 {
+        font-size: 1.5rem;
+      }
+
+      table {
+        font-size: 0.85rem;
+      }
+    }
+  
+    .info-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .info-section h3 {
+      color: #2c3e50;
+      border-bottom: 2px solid #e74c3c;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .author-list li {
+      margin-bottom: 0.8rem;
+      position: relative;
+      padding-left: 20px;
+    }
+    .author-list li:before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #e74c3c;
+    }
+    .resource-links a {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      transition: transform 0.3s;
+    }
+    .resource-links a:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .resource-icon {
+      width: 36px;
+      height: 36px;
+      margin-right: 12px;
+      background: #f1f3f5;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .affiliation-logo {
+      max-height: 22px;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    @media (max-width: 768px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .resource-container {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .resource-card {
+      flex: 1;
+      min-width: 250px;
+      max-width: 300px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .resource-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    
+    .resource-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #2c3e50;
+    }
+    
+    .arxiv .resource-icon { color: #b31b1b; } /* arXiv红色 */
+    .github .resource-icon { color: #333; }   /* GitHub黑色 */
+    .huggingface .resource-icon { color: #ffd21f; } /* Hugging Face黄色 */
+    
+    .resource-title {
+      font-family: 'Roboto', sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 0.8rem;
+      color: #2c3e50;
+    }
+    
+    .resource-link {
+      display: inline-block;
+      background: #2c3e50;
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      margin-top: 0.5rem;
+    }
+    
+    .resource-link:hover {
+      background: #e74c3c;
+      text-decoration: none;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .resource-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .resource-card {
+        min-width: 80%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>S2M-Inject: Prompt-Guided Zero-Shot Voice Cloning for Music Generation</h1>
+  </header>
+  <!-- <div class="authors">
+    <p><center>Chunyu Qiang, Haoyu Wang, Cheng Gong, Tianrui Wang, Ruibo Fu, Tao Wang, Ruilong Chen, Jiangyan Yi, Zhengqi Wen, Chen Zhang, Longbiao Wang, Jianwu Dang, Jianhua Tao</center></p>
+  </div>
+  <div class="affiliations">
+      <center>Tianjin University, Tianjin, China</center>
+      <center>Kuaishou Technology, Beijing, China</center>
+      <center>Institute of Automation, Chinese Academy of Sciences, Beijing, China</center>
+      <center>Tsinghua University, Beijing, China</center>
+      <center>Shenzhen Institute of Advanced Technology, Chinese Academy of Science, Guangdong, China</center>
+  </div> -->
+
+  <main>
+    <div class="container">
+      <!-- Abstract Section -->
+      <section class="section">
+        <h2>Abstract</h2>
+        <p>
+          Existing text-to-music (TTM) models rarely address voice cloning for singing, and most mainstream approaches do not support cross-domain voice cloning based on reference speech. However, speech-to-music voice transfer is highly valuable in practical applications, as speech data is easier to collect and provides more stable speaker representations.In this paper, we propose S2M-Inject, a cross-domain music generation framework that enables voice cloning based on reference speech. By injecting speaker representations extracted from speech into the music generation process, S2M-Inject produces music that preserves the target voice characteristics of the input speech. Experimental results demonstrate that S2M-Inject can effectively perform cross-domain voice cloning while maintaining reasonable music generation quality, and supports both Chinese and English music generation.
+      </section>
+
+
+      <!-- Experiment Section
+      <section class="section">
+        <h2>Experiment</h2>
+        <p>This page shows the samples in the paper "<span class="highlight">SecoustiCodec</span>: Cross-Modal Aligned Streaming Single-Codecbook Speech Codec".</p>
+        <p>For the labeled text-speech paired data, we integrate our internal dataset with the AISHELL-3 dataset and the LibriTTS dataset, resulting in a combined total of 1,000 hours of recordings from 3,000 speakers. </p>
+          <p>All test samples and speakers have not appeared in the training set and validation set.</p>
+          <p>To ensure fairness in all objective metric evaluations, as the sampling rates of the comparison methods differ, the audio generated by SecoustiCodec and all comparison models is downsampled to 16kHz.</p>
+      </section> -->
+
+      <!-- Model Architecture -->
+      <section class="section">
+        <h2>Model Architecture</h2>
+        <figure>
+            <img src="model.png" alt="Model Architecture">
+            <figcaption><strong>S2M-Inject</strong> is built upon a multimodal diffusion transformer (MM-DiT) for music generation, supporting multi-attribute control and voice cloning conditioned on natural language instructions and reference speech timbre. Audio is represented using continuous latent variables extracted from a pretrained Mel-VAE. During inference, the target music latent is obtained by solving an ordinary differential equation (ODE) and decoded into waveform audio.
+        </figure>
+    </section>
+
+      <!-- Inference Section
+      <section class="section">
+        <h2>Inference</h2>
+        <figure>
+          <img src="inference.png" alt="Inference Process">
+          <figcaption>As illustrated in (a), the speech reconstruction using semantic encoding involves semantic embeddings that are discrete values from a single codebook. Notably, in TTS or voice-based dialogue tasks, the target speaker's timbre is often fixed. Therefore, predefined speech segments are used to extract paralinguistic embeddings, ensuring consistency in the synthesized speech's paralinguistic information. In the speech reconstruction task, a segment from the middle of the input speech is used to extract the paralinguistic embedding. Both semantic and paralinguistic encoding utilize a VAE structure, where the mean(μ and μ&#770) is directly used as input during inference, bypassing stochastic sampling.</figcaption>
+        </figure>
+      </section> -->
+
+      <!-- Comparison Table -->
+      <style>
+        .audio-table {
+            background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+            overflow-x: auto;
+        }
+        
+        .audio-table table {
+            min-width: 1200px;
+            border-collapse: separate;
+            border-spacing: 0 1rem;
+        }
+        
+        .audio-table thead th {
+            background: #2c3e50;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            padding: 1.2rem;
+            font-size: 0.95em;
+        }
+        
+        .audio-table tbody tr {
+            background: white;
+            transition: all 0.3s ease;
+            border-radius: 0.8rem;
+        }
+        
+        .audio-table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+        }
+        
+        .text-column {
+            max-width: 500px;
+            white-space: normal;
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #495057;
+        }
+        
+        audio {
+            width: 180px;
+            height: 40px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        
+        .section-title {
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 700;
+            color: #2c3e50;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        </style>
+        
+        <section class="container py-5">
+            <h2 class="section-title text-center mb-4">Music Inference Samples</h2>
+            
+            <div class="audio-table p-4">
+                <table class="w-100">
+                    <thead>
+                        <tr>
+                            <th class="text-start ps-4">Text</th>
+                            <th>Instruction</th>
+                            <th>Speech Input</th>
+                            <th>Generated Music</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                          <td class="text-column ps-4">无法对此作出评论，客人有事尽管吩咐！</td>
+                          <td class="text-column ps-4">无法对此作出评论，客人有事尽管吩咐！</td>
+                          <td><audio controls="" preload="auto"><source src="wav/speech/reference_speech (10).wav" /></audio></td>
+                          <td><audio controls="" preload="auto"><source src="wav/music/syn (10).wav" /></audio></td>
+                        </tr>
+                        
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 S2M-Inject. All rights reserved.</p>
+  </footer>
+</body>
+</html>
