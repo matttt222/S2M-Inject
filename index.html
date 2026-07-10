@@ -668,6 +668,59 @@ mood and atmosphere: The music evokes a sense of melancholy and longing. The com
             </div>
         </section>
 
+        <section class="container py-5">
+            <h2 class="section-title text-center mb-4">Failure Case Analysis</h2>
+
+            <p class="text-center" style="max-width: 900px; margin: 0 auto 2rem; color: #555;">
+                We provide representative failure cases to illustrate the current limitations of
+                speech-conditioned music generation. These examples focus on high-pitch and
+                sustained-vowel regions, where the cross-domain mismatch between speech and
+                singing becomes more evident.
+            </p>
+
+            <div class="audio-table p-4">
+                <table class="w-100">
+                    <thead>
+                        <tr>
+                            <th class="text-start ps-4">Case</th>
+                            <th>Text</th>
+                            <th>Caption / Instruction</th>
+                            <th>Failure Mode</th>
+                            <th>Speech Input</th>
+                            <th>Generated Music</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-column ps-4">High-pitch timbre drift</td>
+                            <td class="text-column ps-4">这龙鳞却曾经铿锵落地犹如碎</td>
+                            <td class="text-column ps-4">This audio has a vocal singing description: "[singer id 0] genre: The genre of music is pop. instrumentation: The instruments used in the music piece include synthesizers, electric guitar, and drums. singer: The music is performed by one singer. The singer is male, in his 20s, with a passionate and energetic tone. rhythm and melody: The tempo is moderate, around 130 BPM, and the key signature is G# minor. mood and atmosphere: The music feels like a nostalgic journey through memories, with the singer's voice weaving a story of love and loss. The synthesizers provide a dreamy backdrop, while the electric guitar adds a touch of melancholy. The drums keep a steady, driving rhythm, creating a sense of urgency and reflection. Together, these elements evoke a bittersweet atmosphere, perfect for a moment of introspection or a poignant farewell."</td>
+                            <td class="text-column ps-4">
+                                In high-pitch regions, the generated vocal may become brighter or thinner
+                                than the reference identity, indicating that global speech-derived timbre
+                                is not always preserved under large pitch shifts.
+                            </td>
+                            <td><audio controls="" preload="auto"><source src="wav/failure/failure_speech1.wav" /></audio></td>
+                            <td><audio controls="" preload="auto"><source src="wav/failure/failure_music1.wav" /></audio></td>
+                        </tr>
+                        <tr>
+                            <td class="text-column ps-4">Expressive instability in sustained vowels</td>
+                            <td class="text-column ps-4">I'm walking on sunshine. I'm gonna feel good.</td>
+                            <td class="text-column ps-4">This audio has a vocal singing description: "[singer id 0] genre: The genre of music is pop. instrumentation: The instruments used in the music piece include a piano, a guitar, and a bass. singer: The music is performed by one female singers. The Singer is a young adult female with a high-pitched, energetic tone. rhythm and melody: The tempo is moderate, with a steady beat that encourages dancing. The key signature is Bb major, giving the music a bright and uplifting feel. mood and atmosphere: The music creates a joyful and energetic atmosphere, evoking feelings of happiness and excitement. The combination of the singers' harmonious voices, the lively rhythm, and the bright key signature work together to create a sense of celebration and positivity."</td>
+                            <td class="text-column ps-4">
+                                For sustained vowels, singing-specific cues such as vibrato, breathiness,
+                                or long-note control may be less stable. This suggests that S2M-Inject
+                                mainly transfers global speech-derived timbre, while fine-grained singing
+                                techniques require more explicit modeling.
+                            </td>
+                            <td><audio controls="" preload="auto"><source src="wav/failure/failure_speech2.wav" /></audio></td>
+                            <td><audio controls="" preload="auto"><source src="wav/failure/failure_music2.wav" /></audio></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
   </main>
 
